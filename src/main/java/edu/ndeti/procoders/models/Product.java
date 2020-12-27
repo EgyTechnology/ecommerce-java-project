@@ -1,12 +1,13 @@
 package edu.ndeti.procoders.models;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class Product extends UniqueItem {
     private String name;
     private String description;
     private Double price;
-    private Image image;
+    private BufferedImage image;
 
     public void setName(String name) {
         this.name = name;
@@ -32,11 +33,16 @@ public class Product extends UniqueItem {
         return price;
     }
 
-    public void setImage(Image image) {
+    public void setImage(BufferedImage image) {
         this.image = image;
     }
 
-    public Image getImage() {
+    public BufferedImage getImage() {
         return image;
+    }
+
+    @Override
+    public String toString() {
+        return name + " $" + price + " (" + this.getIdentifier() + ")";
     }
 }

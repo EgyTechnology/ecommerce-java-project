@@ -8,20 +8,33 @@ package edu.ndeti.procoders;
 import edu.ndeti.procoders.exceptions.DuplicatedUsernameException;
 import edu.ndeti.procoders.models.Client;
 import edu.ndeti.procoders.models.Manager;
+import edu.ndeti.procoders.models.Product;
 import edu.ndeti.procoders.models.User;
+import edu.ndeti.procoders.repositories.ProductsRepository;
 import edu.ndeti.procoders.repositories.UsersRepository;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.plaf.FileChooserUI;
 import javax.swing.table.TableModel;
 
 /**
@@ -31,15 +44,20 @@ import javax.swing.table.TableModel;
 public class MainForm extends javax.swing.JFrame {
 
     private User user;
+    private Product product;
     private UsersRepository userRepo;
+    private ProductsRepository productRepo;
+    
     private DefaultListModel<User> usersListModel = new DefaultListModel<>();
-
+    private DefaultListModel<Product> productsListModel = new DefaultListModel<>();
+    
     /**
      * Creates new form MainForm
      */
     public MainForm() {
         initComponents();
         userRepo = UsersRepository.getInstance();
+        productRepo = ProductsRepository.getInstance();
     }
 
     /**
@@ -70,7 +88,6 @@ public class MainForm extends javax.swing.JFrame {
         cleanButton = new javax.swing.JButton();
         saveButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
-        ProductsPanel = new javax.swing.JPanel();
         ShoppingPanel = new javax.swing.JPanel();
         shoppingPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -84,6 +101,22 @@ public class MainForm extends javax.swing.JFrame {
         clearButton = new javax.swing.JButton();
         shoppingItemsScrollPanel = new javax.swing.JScrollPane();
         shoppingItemsPanel = new javax.swing.JPanel();
+        ProductsPanel = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        productsList = new javax.swing.JList();
+        jLabel8 = new javax.swing.JLabel();
+        productNameField = new javax.swing.JTextField();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        saveProductButton = new javax.swing.JButton();
+        cleanProductButton = new javax.swing.JButton();
+        deleteProductButton = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        productDescriptionField = new javax.swing.JTextArea();
+        jLabel11 = new javax.swing.JLabel();
+        productPriceField = new javax.swing.JTextField();
+        productImageContainerPanel = new javax.swing.JPanel();
+        uploadProductPicButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -231,19 +264,6 @@ public class MainForm extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Users", usersPanel);
 
-        javax.swing.GroupLayout ProductsPanelLayout = new javax.swing.GroupLayout(ProductsPanel);
-        ProductsPanel.setLayout(ProductsPanelLayout);
-        ProductsPanelLayout.setHorizontalGroup(
-            ProductsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 859, Short.MAX_VALUE)
-        );
-        ProductsPanelLayout.setVerticalGroup(
-            ProductsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 421, Short.MAX_VALUE)
-        );
-
-        jTabbedPane1.addTab("Products", ProductsPanel);
-
         jLabel1.setText("Product Search");
 
         SearchProductButton.setText("Search");
@@ -385,6 +405,139 @@ public class MainForm extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Shopping", ShoppingPanel);
 
+        productsList.setModel(productsListModel);
+        productsList.addListSelectionListener((e) -> {
+            Object selectedItem = (Product) productsList.getSelectedValue();
+
+            if (selectedItem instanceof Product) {
+                product = (Product) selectedItem;
+                this.productNameField.setText(product.getName());
+                this.productDescriptionField.setText(product.getDescription());
+                this.productPriceField.setText(product.getPrice() + "");
+                final BufferedImage productImage = product.getImage();
+
+                if (productImage != null) {
+                    this.productImageContainerPanel.removeAll();
+                    this.productImageContainerPanel.add(new ImagePanel(productImage));
+                    this.productImageContainerPanel.revalidate();
+                    this.productImageContainerPanel.repaint();
+                }
+            }
+        });
+        jScrollPane3.setViewportView(productsList);
+
+        jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel8.setText("Product Data");
+
+        jLabel9.setText("Product Name");
+
+        jLabel10.setText("Description");
+
+        saveProductButton.setText("Save");
+        saveProductButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveProductButtonActionPerformed(evt);
+            }
+        });
+
+        cleanProductButton.setText("Clean");
+        cleanProductButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cleanProductButtonActionPerformed(evt);
+            }
+        });
+
+        deleteProductButton.setText("Delete");
+        deleteProductButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteProductButtonActionPerformed(evt);
+            }
+        });
+
+        productDescriptionField.setColumns(20);
+        productDescriptionField.setRows(5);
+        jScrollPane2.setViewportView(productDescriptionField);
+
+        jLabel11.setText("Price");
+
+        productImageContainerPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
+        productImageContainerPanel.setLayout(new java.awt.CardLayout());
+
+        uploadProductPicButton.setText("Add Image");
+        uploadProductPicButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                uploadProductPicButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout ProductsPanelLayout = new javax.swing.GroupLayout(ProductsPanel);
+        ProductsPanel.setLayout(ProductsPanelLayout);
+        ProductsPanelLayout.setHorizontalGroup(
+            ProductsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ProductsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 292, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(ProductsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(ProductsPanelLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(saveProductButton, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cleanProductButton, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(deleteProductButton, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(productPriceField, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel11)
+                    .addGroup(ProductsPanelLayout.createSequentialGroup()
+                        .addGroup(ProductsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel10)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+                            .addComponent(jLabel8)
+                            .addComponent(jLabel9)
+                            .addComponent(productNameField))
+                        .addGap(18, 18, 18)
+                        .addGroup(ProductsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(uploadProductPicButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(productImageContainerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addContainerGap())
+        );
+        ProductsPanelLayout.setVerticalGroup(
+            ProductsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(ProductsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(ProductsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(ProductsPanelLayout.createSequentialGroup()
+                        .addGroup(ProductsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(ProductsPanelLayout.createSequentialGroup()
+                                .addComponent(productImageContainerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(uploadProductPicButton))
+                            .addGroup(ProductsPanelLayout.createSequentialGroup()
+                                .addComponent(jLabel8)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel9)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(productNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel10)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel11)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(productPriceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addGroup(ProductsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(cleanProductButton)
+                            .addComponent(deleteProductButton)
+                            .addComponent(saveProductButton))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+
+        jTabbedPane1.addTab("Products", ProductsPanel);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -501,6 +654,98 @@ public class MainForm extends javax.swing.JFrame {
         user = null;
         cleanButtonActionPerformed(evt);
     }//GEN-LAST:event_deleteButtonActionPerformed
+
+    private void saveProductButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveProductButtonActionPerformed
+        if (product != null) {
+            JOptionPane.showMessageDialog(this, "Update product feature is not available, please clean the form to create new", "Warn", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        try {
+            product = new Product();
+        
+            product.setName(productNameField.getText());
+            product.setDescription(productDescriptionField.getText());
+            product.setPrice(Double.parseDouble(productPriceField.getText()));
+
+            final Component imageComponent = productImageContainerPanel.getComponent(0);
+
+            if (imageComponent instanceof ImagePanel) {
+                final ImagePanel imageConainter = (ImagePanel) imageComponent;
+                product.setImage(imageConainter.getBufferedImage());
+            }
+            
+            productRepo.addProduct(product);
+            
+            JOptionPane.showMessageDialog(this, "Product Created", "Info", JOptionPane.INFORMATION_MESSAGE);
+            
+            productsListModel.addElement(product);
+            productsList.setModel(productsListModel);
+            
+            cleanProductButtonActionPerformed(evt);
+        } catch (Exception exception) {
+            final String message = "Failed to save new product";
+            JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+            java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, message, exception);
+        } finally {
+            product = null;
+        }
+    }//GEN-LAST:event_saveProductButtonActionPerformed
+
+    private void cleanProductButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cleanProductButtonActionPerformed
+        productNameField.setText("");
+        productDescriptionField.setText("");
+        
+        productPriceField.setText("");
+        
+        productImageContainerPanel.removeAll();
+        productImageContainerPanel.revalidate();
+        productImageContainerPanel.repaint();
+    }//GEN-LAST:event_cleanProductButtonActionPerformed
+
+    private void deleteProductButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteProductButtonActionPerformed
+        if (product == null) {
+            JOptionPane.showMessageDialog(this, "Product must be selected from list to remove", "Warn", JOptionPane.WARNING_MESSAGE);    
+            return;
+        }
+        
+        productRepo.removeProduct(product);
+        productsListModel.removeElement(product);
+        productsList.setModel(productsListModel);
+
+        JOptionPane.showMessageDialog(this, "Product Removed", "Info", JOptionPane.INFORMATION_MESSAGE);
+        
+        product = null;
+        cleanProductButtonActionPerformed(evt);
+    }//GEN-LAST:event_deleteProductButtonActionPerformed
+
+    private void uploadProductPicButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadProductPicButtonActionPerformed
+        try {
+            JFileChooser fileChooser = new JFileChooser();
+            
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            fileChooser.setMultiSelectionEnabled(false);
+            
+            FileNameExtensionFilter restrictImagesOnly = new FileNameExtensionFilter("Only Image Files", ImageIO.getReaderFileSuffixes());
+            
+            fileChooser.addChoosableFileFilter(restrictImagesOnly);
+            
+            final int dialogState = fileChooser.showDialog(this, "Open");
+            
+            if (dialogState == JFileChooser.APPROVE_OPTION) {
+                final File file = fileChooser.getSelectedFile().getAbsoluteFile();
+                BufferedImage image = ImageIO.read(file);
+
+                productImageContainerPanel.removeAll();
+                productImageContainerPanel.add(new ImagePanel(image));
+                productImageContainerPanel.revalidate();
+                productImageContainerPanel.repaint();
+            }
+
+        } catch (Exception exception) {
+            java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, "Failed to load product image", exception);
+        }
+    }//GEN-LAST:event_uploadProductPicButtonActionPerformed
     
     /**
      * @param args the command line arguments
@@ -545,29 +790,44 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JPanel cartPanel;
     private javax.swing.JButton checkoutButton;
     private javax.swing.JButton cleanButton;
+    private javax.swing.JButton cleanProductButton;
     private javax.swing.JButton clearButton;
     private javax.swing.JButton deleteButton;
+    private javax.swing.JButton deleteProductButton;
     private javax.swing.JTextField firstNameField;
     private javax.swing.JCheckBox isManagerCheckbox;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField lastNameField;
     private javax.swing.JTextField middleNameField;
     private javax.swing.JPasswordField passwordConfirmField;
     private javax.swing.JPasswordField passwordField;
+    private javax.swing.JTextArea productDescriptionField;
+    private javax.swing.JPanel productImageContainerPanel;
+    private javax.swing.JTextField productNameField;
+    private javax.swing.JTextField productPriceField;
+    private javax.swing.JList productsList;
     private javax.swing.JTable productsTable;
     private javax.swing.JScrollPane productsTableScrollPane;
     private javax.swing.JButton saveButton;
+    private javax.swing.JButton saveProductButton;
     private javax.swing.JPanel shoppingItemsPanel;
     private javax.swing.JScrollPane shoppingItemsScrollPanel;
     private javax.swing.JPanel shoppingPanel;
+    private javax.swing.JButton uploadProductPicButton;
     private javax.swing.JTextField usernameField;
     private javax.swing.JList usersList;
     private javax.swing.JPanel usersPanel;
