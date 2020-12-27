@@ -1,12 +1,15 @@
 package edu.ndeti.procoders.repositories;
 
 import edu.ndeti.procoders.exceptions.DuplicatedUsernameException;
+import edu.ndeti.procoders.exceptions.InvalidPasswordException;
+import edu.ndeti.procoders.models.Manager;
 import edu.ndeti.procoders.models.User;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 public class UsersRepository {
     private static UsersRepository repositoryInstance = null;
@@ -15,6 +18,13 @@ public class UsersRepository {
 
     private UsersRepository() {
         users = new ArrayList();
+        
+        final User rootUser = new Manager();
+        rootUser.setFirstName("Root");
+        rootUser.setUsername("root");
+        rootUser.setPassword("P@ssw0rd");
+
+        users.add(rootUser);
     }
 
     public static UsersRepository getInstance() {

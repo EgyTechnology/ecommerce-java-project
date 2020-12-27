@@ -50,9 +50,9 @@ public abstract class User extends UniqueItem {
         return passwordHash;
     }
 
-    public void setPasswordHash(String passwordHash) {
+    public void setPassword(String password) {
         if (this.passwordHash == null) {
-            this.passwordHash = passwordHash;
+            this.passwordHash = hash(password);
         }
     }
 
@@ -85,7 +85,7 @@ public abstract class User extends UniqueItem {
         }
     }
 
-    private Boolean isValidPassword(String password) {
+    public Boolean isValidPassword(String password) {
         String hashedPassword = hash(password);
         return passwordHash.equals(hashedPassword) ? true : false;
     }
