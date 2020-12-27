@@ -5,12 +5,18 @@
  */
 package edu.ndeti.procoders;
 
+import edu.ndeti.procoders.exceptions.DuplicatedUsernameException;
+import edu.ndeti.procoders.models.Client;
+import edu.ndeti.procoders.models.Manager;
+import edu.ndeti.procoders.models.User;
+import edu.ndeti.procoders.repositories.UsersRepository;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -24,11 +30,16 @@ import javax.swing.table.TableModel;
  */
 public class MainForm extends javax.swing.JFrame {
 
+    private User user;
+    private UsersRepository userRepo;
+    private DefaultListModel<User> usersListModel = new DefaultListModel<>();
+
     /**
      * Creates new form MainForm
      */
     public MainForm() {
         initComponents();
+        userRepo = UsersRepository.getInstance();
     }
 
     /**
@@ -42,6 +53,23 @@ public class MainForm extends javax.swing.JFrame {
 
         jTabbedPane1 = new javax.swing.JTabbedPane();
         usersPanel = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        usersList = new javax.swing.JList();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        firstNameField = new javax.swing.JTextField();
+        middleNameField = new javax.swing.JTextField();
+        lastNameField = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        usernameField = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        passwordField = new javax.swing.JPasswordField();
+        passwordConfirmField = new javax.swing.JPasswordField();
+        jLabel7 = new javax.swing.JLabel();
+        isManagerCheckbox = new javax.swing.JCheckBox();
+        cleanButton = new javax.swing.JButton();
+        saveButton = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
         ProductsPanel = new javax.swing.JPanel();
         ShoppingPanel = new javax.swing.JPanel();
         shoppingPanel = new javax.swing.JPanel();
@@ -59,15 +87,146 @@ public class MainForm extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        usersList.setModel(usersListModel);
+        usersList.addListSelectionListener((e) -> {
+            Object selectedItem = (User) usersList.getSelectedValue();
+
+            if (selectedItem instanceof User) {
+                user = (User) selectedItem;
+                this.firstNameField.setText(user.getFirstName());
+                this.middleNameField.setText(user.getMiddleName());
+                this.lastNameField.setText(user.getLastName());
+                this.usernameField.setText(user.getUsername());
+                this.passwordField.setText(user.getPasswordHash());
+                this.passwordConfirmField.setText(user.getPasswordHash());
+                this.isManagerCheckbox.setSelected(user.isManager());
+            }
+        });
+        jScrollPane1.setViewportView(usersList);
+
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel3.setText("User Data");
+
+        jLabel4.setText("Full Name");
+
+        jLabel5.setText("Password");
+
+        jLabel6.setText("Username");
+
+        passwordField.setText("jPasswordField1");
+
+        passwordConfirmField.setText("jPasswordField2");
+
+        jLabel7.setText("Password Confirm");
+
+        isManagerCheckbox.setText("Is Manager");
+        isManagerCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isManagerCheckboxActionPerformed(evt);
+            }
+        });
+
+        cleanButton.setText("Clean");
+        cleanButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cleanButtonActionPerformed(evt);
+            }
+        });
+
+        saveButton.setText("Save");
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
+
+        deleteButton.setText("Delete");
+        deleteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout usersPanelLayout = new javax.swing.GroupLayout(usersPanel);
         usersPanel.setLayout(usersPanelLayout);
         usersPanelLayout.setHorizontalGroup(
             usersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 832, Short.MAX_VALUE)
+            .addGroup(usersPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 292, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(usersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(usersPanelLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(usersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(usersPanelLayout.createSequentialGroup()
+                                .addGroup(usersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(usersPanelLayout.createSequentialGroup()
+                                        .addComponent(firstNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(middleNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(lastNameField))
+                                    .addComponent(jLabel3)
+                                    .addComponent(jLabel4))
+                                .addGap(12, 12, 12))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, usersPanelLayout.createSequentialGroup()
+                                .addGroup(usersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(passwordField, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(usernameField)
+                                    .addComponent(passwordConfirmField, javax.swing.GroupLayout.Alignment.LEADING))
+                                .addContainerGap())
+                            .addGroup(usersPanelLayout.createSequentialGroup()
+                                .addGroup(usersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel5)
+                                    .addComponent(jLabel6)
+                                    .addComponent(jLabel7)
+                                    .addComponent(isManagerCheckbox))
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, usersPanelLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cleanButton, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(deleteButton, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
         usersPanelLayout.setVerticalGroup(
             usersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 421, Short.MAX_VALUE)
+            .addGroup(usersPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(usersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(usersPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(usersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(firstNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(middleNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lastNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel7)
+                        .addGap(11, 11, 11)
+                        .addComponent(passwordConfirmField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(isManagerCheckbox)
+                        .addGap(19, 19, 19)
+                        .addGroup(usersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(cleanButton)
+                            .addComponent(deleteButton)
+                            .addComponent(saveButton))
+                        .addGap(0, 70, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1))
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Users", usersPanel);
@@ -76,7 +235,7 @@ public class MainForm extends javax.swing.JFrame {
         ProductsPanel.setLayout(ProductsPanelLayout);
         ProductsPanelLayout.setHorizontalGroup(
             ProductsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 832, Short.MAX_VALUE)
+            .addGap(0, 859, Short.MAX_VALUE)
         );
         ProductsPanelLayout.setVerticalGroup(
             ProductsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -169,7 +328,7 @@ public class MainForm extends javax.swing.JFrame {
         shoppingItemsPanel.setLayout(shoppingItemsPanelLayout);
         shoppingItemsPanelLayout.setHorizontalGroup(
             shoppingItemsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 290, Short.MAX_VALUE)
+            .addGap(0, 317, Short.MAX_VALUE)
         );
         shoppingItemsPanelLayout.setVerticalGroup(
             shoppingItemsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -264,6 +423,84 @@ public class MainForm extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Seleced Item ID: " + itemID);
         }
     }//GEN-LAST:event_productsTableMousePressed
+
+    private void isManagerCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isManagerCheckboxActionPerformed
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_isManagerCheckboxActionPerformed
+
+    private void cleanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cleanButtonActionPerformed
+        usernameField.setText("");
+        passwordConfirmField.setText("");
+        passwordField.setText("");
+        firstNameField.setText("");
+        middleNameField.setText("");
+        lastNameField.setText("");
+        isManagerCheckbox.setSelected(false);
+    }//GEN-LAST:event_cleanButtonActionPerformed
+
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        if (user != null) {
+            JOptionPane.showMessageDialog(this, "Update user feature is not available, please clean the form to create new", "Warn", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        final String password = String.copyValueOf(passwordField.getPassword());
+        final String passwordConfirm = String.copyValueOf(passwordConfirmField.getPassword());
+        
+        if (!password.equals(passwordConfirm)) {
+            JOptionPane.showMessageDialog(this, "Password does not match, please make sure that the password is repeated correctly", "Warn", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        if (isManagerCheckbox.isSelected())
+            user = new Manager();
+        else
+            user = new Client();
+        
+        user.setFirstName(firstNameField.getText());
+        user.setMiddleName(middleNameField.getText());
+        user.setLastName(lastNameField.getText());
+        user.setUsername(usernameField.getText());
+        
+        final String passwordText = String.copyValueOf(passwordField.getPassword());
+        
+        user.setPassword(passwordText);
+        
+        try {
+            userRepo.addUser(user);    
+            usersListModel.addElement(user);
+            usersList.setModel(usersListModel);
+            
+            JOptionPane.showMessageDialog(this, "User Created", "Info", JOptionPane.INFORMATION_MESSAGE);
+            
+            cleanButtonActionPerformed(evt);
+        } catch (DuplicatedUsernameException exception) {
+            final String message = "Failed to save new user, there is a user with same username";
+            JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+            java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, message, exception);
+        } finally {
+            user = null;
+        }
+    }//GEN-LAST:event_saveButtonActionPerformed
+
+    
+    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
+
+        if (user == null) {
+            JOptionPane.showMessageDialog(this, "User must be selected from list to remove", "Warn", JOptionPane.WARNING_MESSAGE);    
+            return;
+        }
+        
+        userRepo.removeUser(user);
+        usersListModel.removeElement(user);
+        usersList.setModel(usersListModel);
+
+        JOptionPane.showMessageDialog(this, "User Removed", "Info", JOptionPane.INFORMATION_MESSAGE);
+        
+        user = null;
+        cleanButtonActionPerformed(evt);
+    }//GEN-LAST:event_deleteButtonActionPerformed
     
     /**
      * @param args the command line arguments
@@ -307,15 +544,32 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JPanel ShoppingPanel;
     private javax.swing.JPanel cartPanel;
     private javax.swing.JButton checkoutButton;
+    private javax.swing.JButton cleanButton;
     private javax.swing.JButton clearButton;
+    private javax.swing.JButton deleteButton;
+    private javax.swing.JTextField firstNameField;
+    private javax.swing.JCheckBox isManagerCheckbox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTextField lastNameField;
+    private javax.swing.JTextField middleNameField;
+    private javax.swing.JPasswordField passwordConfirmField;
+    private javax.swing.JPasswordField passwordField;
     private javax.swing.JTable productsTable;
     private javax.swing.JScrollPane productsTableScrollPane;
+    private javax.swing.JButton saveButton;
     private javax.swing.JPanel shoppingItemsPanel;
     private javax.swing.JScrollPane shoppingItemsScrollPanel;
     private javax.swing.JPanel shoppingPanel;
+    private javax.swing.JTextField usernameField;
+    private javax.swing.JList usersList;
     private javax.swing.JPanel usersPanel;
     // End of variables declaration//GEN-END:variables
 }
