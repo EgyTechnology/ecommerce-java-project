@@ -1,45 +1,90 @@
 package edu.ndeti.procoders.models;
 
-import java.util.ArrayList;
-import java.util.List;
+import edu.ndeti.procoders.models.CartItem;
+import edu.ndeti.procoders.models.Client;
+import edu.ndeti.procoders.models.Product;
+import java.util.Collection;
+import java.util.Hashtable;
 import java.util.Optional;
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
 
-public class ShoppingCart {
+public class ShoppingCart extends JPanel {
     public Client client;
-    private List<CartItem> itemsList;
-
+    private Hashtable<String, CartItem> itemsTable;
+    
     public ShoppingCart(Client client) {
         this.client = client;
-        itemsList = new ArrayList<>();
+        itemsTable = new Hashtable<>();
     }
 
     public void addItem(Product product) {
-        Optional<CartItem> findCartItem = findProduct(product);
+        Optional<CartItem> findCartItem = findItem(product);
 
         if (findCartItem.isPresent()) {
             findCartItem.get().increaseCount();
         } else {
-            CartItem newItem = new CartItem();
+            CartItem newItem = new CartItem(this);
             newItem.setProduct(product);
 
-            itemsList.add(newItem);
+            addSubPanel(product);
+        }
+    }
+    
+    private void addSubPanel(Product product) {
+        final CartItem cartItemPanel = new CartItem(this, product);
+        
+        itemsTable.put(product.getIdentifier(), cartItemPanel);
+        
+        add(cartItemPanel);
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        refreshShoppingItemsPanel();
+    }
+    
+    private void removeSubPanel(String productIdenetifer) throws NullPointerException {
+        final CartItem removedCartItemPanel = itemsTable.remove(productIdenetifer);
+        this.remove(removedCartItemPanel);
+        refreshShoppingItemsPanel();
+    }
+    
+    private void refreshShoppingItemsPanel() {
+        this.revalidate();
+        this.repaint();
+    }
+    
+    public boolean removeItem(Product product) {
+        try {
+            removeSubPanel(product.getIdentifier());
+            return true;
+        } catch (NullPointerException exception) {
+            return false;
         }
     }
 
-    public boolean removeItem(Product product) {
-        Optional<CartItem> findCartItem = findProduct(product);
-
-        if (!findCartItem.isPresent())
-            return false;
-
-        return itemsList.remove(findCartItem.get());
+    @Override
+    public void removeAll() {
+        itemsTable.clear();
+        
+        super.removeAll(); //To change body of generated methods, choose Tools | Templates.
+    
+        refreshShoppingItemsPanel();
     }
 
-    public Optional<CartItem> findProduct(Product product) {
-        return itemsList.stream().filter(i -> i.getProduct().equals(product)).findFirst();
+    public Optional<CartItem> findItem(Product product) {
+        return Optional.ofNullable(itemsTable.get(product.getIdentifier()));
     }
 
-    public List<CartItem> getItemsList() {
-        return itemsList;
+    public boolean isItemExists(Product product) {
+        return itemsTable.containsKey(product.getIdentifier());
+    }
+    
+    public Collection<CartItem> getItemsList() {
+        return itemsTable.values();
+    }
+    
+    public Double getTotalCartValue() {
+        return getItemsList().stream()
+                .map(i -> i.getTotalItemValue())
+                .reduce(0.0, (subTotal, i) -> subTotal + i);
     }
 }

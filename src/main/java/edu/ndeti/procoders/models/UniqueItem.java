@@ -1,7 +1,7 @@
 package edu.ndeti.procoders.models;
 
 public abstract class UniqueItem {
-    private String identifier = null;
+    protected String identifier = null;
 
     public void setIdentifier(String identifier) {
         if (this.identifier == null)

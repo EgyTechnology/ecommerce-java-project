@@ -20,7 +20,7 @@ public class ImagePanel extends javax.swing.JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.drawImage(image, 0, 0, 145, 145, Color.BLUE, this); // see javadoc for more info on the parameters            
+        g.drawImage(image, 0, 0, 145, 145, this); // see javadoc for more info on the parameters            
     }
     /**
      * Creates new form ImagePanel

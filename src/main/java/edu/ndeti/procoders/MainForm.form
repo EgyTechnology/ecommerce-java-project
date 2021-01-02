@@ -1,10 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <NonVisualComponents>
+    <Menu class="javax.swing.JMenuBar" name="jMenuBar1">
+      <SubComponents>
+        <Menu class="javax.swing.JMenu" name="jMenu1">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="User"/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="logoutMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Logout"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="logoutMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
+      </SubComponents>
+    </Menu>
+  </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
   </Properties>
   <SyntheticProperties>
+    <SyntheticProperty name="menuBar" type="java.lang.String" value="jMenuBar1"/>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
     <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
@@ -23,17 +45,23 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jTabbedPane1" alignment="0" max="32767" attributes="0"/>
+          <Component id="mainTabbedPane" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jTabbedPane1" alignment="0" max="32767" attributes="0"/>
+          <Component id="mainTabbedPane" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Container class="javax.swing.JTabbedPane" name="jTabbedPane1">
+    <Container class="javax.swing.JTabbedPane" name="mainTabbedPane">
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="mainTabbedPaneStateChanged"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
+      </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
       <SubComponents>
@@ -137,7 +165,7 @@
                                   <Component id="deleteButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="saveButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="0" pref="70" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="73" max="32767" attributes="0"/>
                           </Group>
                           <Component id="jScrollPane1" max="32767" attributes="0"/>
                       </Group>
@@ -161,7 +189,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="usersList.addListSelectionListener((e) -&gt; {&#xa;    Object selectedItem = (User) usersList.getSelectedValue();&#xa;&#xa;    if (selectedItem instanceof User) {&#xa;        user = (User) selectedItem;&#xa;        this.firstNameField.setText(user.getFirstName());&#xa;        this.middleNameField.setText(user.getMiddleName());&#xa;        this.lastNameField.setText(user.getLastName());&#xa;        this.usernameField.setText(user.getUsername());&#xa;        this.passwordField.setText(user.getPasswordHash());&#xa;        this.passwordConfirmField.setText(user.getPasswordHash());&#xa;        this.isManagerCheckbox.setSelected(user.isManager());&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="usersList.addListSelectionListener((e) -&gt; {&#xa;    Object selectedItem = (User) usersList.getSelectedValue();&#xa;&#xa;    if (selectedItem instanceof User) {&#xa;        selectedUser = (User) selectedItem;&#xa;        this.firstNameField.setText(selectedUser.getFirstName());&#xa;        this.middleNameField.setText(selectedUser.getMiddleName());&#xa;        this.lastNameField.setText(selectedUser.getLastName());&#xa;        this.usernameField.setText(selectedUser.getUsername());&#xa;        this.passwordField.setText(selectedUser.getPasswordHash());&#xa;        this.passwordConfirmField.setText(selectedUser.getPasswordHash());&#xa;        this.isManagerCheckbox.setSelected(selectedUser.isManager());&#xa;    }&#xa;});"/>
                     <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value=""/>
                   </AuxValues>
                 </Component>
@@ -217,9 +245,6 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Is Manager"/>
               </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="isManagerCheckboxActionPerformed"/>
-              </Events>
             </Component>
             <Component class="javax.swing.JButton" name="cleanButton">
               <Properties>
@@ -282,13 +307,10 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="productsTableScrollPane" max="32767" attributes="0"/>
+                              <Component id="productsTableScrollPane" pref="510" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
-                                  <Component id="jLabel1" min="-2" pref="87" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="SearchProductTextField" pref="339" max="32767" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="SearchProductButton" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -299,11 +321,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="SearchProductTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="SearchProductButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="productsTableScrollPane" min="-2" pref="375" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
@@ -314,18 +332,11 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="jLabel1">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Product Search"/>
+                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                      <Font name="Segoe UI" size="18" style="0"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="Products List"/>
                   </Properties>
-                </Component>
-                <Component class="javax.swing.JTextField" name="SearchProductTextField">
-                </Component>
-                <Component class="javax.swing.JButton" name="SearchProductButton">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Search"/>
-                  </Properties>
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="SearchProductButtonActionPerformed"/>
-                  </Events>
                 </Component>
                 <Container class="javax.swing.JScrollPane" name="productsTableScrollPane">
                   <AuxValues>
@@ -336,19 +347,8 @@
                   <SubComponents>
                     <Component class="javax.swing.JTable" name="productsTable">
                       <Properties>
-                        <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                          <Table columnCount="4" rowCount="1">
-                            <Column editable="false" title="ID" type="java.lang.String">
-                              <Data value="1"/>
-                            </Column>
-                            <Column editable="false" title="Image" type="java.lang.Object"/>
-                            <Column editable="false" title="Name" type="java.lang.String">
-                              <Data value="Test"/>
-                            </Column>
-                            <Column editable="false" title="Current Stock" type="java.lang.Integer">
-                              <Data value="5"/>
-                            </Column>
-                          </Table>
+                        <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="productTableModel" type="code"/>
                         </Property>
                         <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                           <TableColumnModel selectionModel="0">
@@ -394,7 +394,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
+                      <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="shoppingItemsScrollPanel" max="32767" attributes="0"/>
@@ -407,6 +407,11 @@
                                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="jLabel12" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="totalCartValueLabel" max="32767" attributes="0"/>
+                              </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -418,8 +423,13 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="shoppingItemsScrollPanel" min="-2" pref="344" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="shoppingItemsScrollPanel" min="-2" pref="307" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="jLabel12" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="totalCartValueLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="checkoutButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="clearButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -442,11 +452,17 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Checkout"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="checkoutButtonActionPerformed"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JButton" name="clearButton">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Clear"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="clearButtonActionPerformed"/>
+                  </Events>
                 </Component>
                 <Container class="javax.swing.JScrollPane" name="shoppingItemsScrollPanel">
                   <Properties>
@@ -458,6 +474,10 @@
                   <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
                   <SubComponents>
                     <Container class="javax.swing.JPanel" name="shoppingItemsPanel">
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ShoppingCart(new Client());&#xd;&#xa;"/>
+                        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="MainForm_shoppingItemsPanel"/>
+                      </AuxValues>
 
                       <Layout>
                         <DimensionLayout dim="0">
@@ -474,6 +494,16 @@
                     </Container>
                   </SubComponents>
                 </Container>
+                <Component class="javax.swing.JLabel" name="jLabel12">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Total:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="totalCartValueLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="$0.0"/>
+                  </Properties>
+                </Component>
               </SubComponents>
             </Container>
           </SubComponents>
@@ -560,7 +590,7 @@
                               </Group>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="jScrollPane3" alignment="0" pref="409" max="32767" attributes="0"/>
+                          <Component id="jScrollPane3" alignment="0" pref="412" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -582,7 +612,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="productsList.addListSelectionListener((e) -&gt; {&#xa;    Object selectedItem = (Product) productsList.getSelectedValue();&#xa;&#xa;    if (selectedItem instanceof Product) {&#xa;        product = (Product) selectedItem;&#xa;        this.productNameField.setText(product.getName());&#xa;        this.productDescriptionField.setText(product.getDescription());&#xa;        this.productPriceField.setText(product.getPrice() + &quot;&quot;);&#xa;        final BufferedImage productImage = product.getImage();&#xa;        &#xa;        if (productImage != null) {&#xa;            this.productImageContainerPanel.removeAll();&#xa;            this.productImageContainerPanel.add(new ImagePanel(productImage));&#xa;            this.productImageContainerPanel.revalidate();&#xa;            this.productImageContainerPanel.repaint();&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="productsList.addListSelectionListener((e) -&gt; {&#xa;    Object selectedItem = (Product) productsList.getSelectedValue();&#xa;&#xa;    if (selectedItem instanceof Product) {&#xa;        selectedProduct = (Product) selectedItem;&#xa;        this.productNameField.setText(selectedProduct.getName());&#xa;        this.productDescriptionField.setText(selectedProduct.getDescription());&#xa;        this.productPriceField.setText(selectedProduct.getPrice() + &quot;&quot;);&#xa;        final BufferedImage productImage = selectedProduct.getImage();&#xa;        &#xa;        if (productImage != null) {&#xa;            this.productImageContainerPanel.removeAll();&#xa;            this.productImageContainerPanel.add(new ImagePanel(productImage));&#xa;            this.productImageContainerPanel.revalidate();&#xa;            this.productImageContainerPanel.repaint();&#xa;        }&#xa;    }&#xa;});"/>
                     <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value=""/>
                   </AuxValues>
                 </Component>

@@ -9,8 +9,8 @@ import java.util.Base64;
 
 public abstract class User extends UniqueItem {
     private String firstName;
-    private String middleName;
-    private String lastName;
+    private String middleName = "";
+    private String lastName = "";
     private String username;
     private String passwordHash;
 

@@ -5,10 +5,13 @@
  */
 package edu.ndeti.procoders;
 
+import edu.ndeti.procoders.models.ShoppingCart;
 import edu.ndeti.procoders.exceptions.DuplicatedUsernameException;
+import edu.ndeti.procoders.models.CartItem;
 import edu.ndeti.procoders.models.Client;
 import edu.ndeti.procoders.models.Manager;
 import edu.ndeti.procoders.models.Product;
+import edu.ndeti.procoders.models.ProductTableModel;
 import edu.ndeti.procoders.models.User;
 import edu.ndeti.procoders.repositories.ProductsRepository;
 import edu.ndeti.procoders.repositories.UsersRepository;
@@ -20,22 +23,18 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import javax.imageio.ImageIO;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.plaf.FileChooserUI;
-import javax.swing.table.TableModel;
+
 
 /**
  *
@@ -43,21 +42,28 @@ import javax.swing.table.TableModel;
  */
 public class MainForm extends javax.swing.JFrame {
 
-    private User user;
-    private Product product;
+    private User selectedUser;
+    private Product selectedProduct;
     private UsersRepository userRepo;
     private ProductsRepository productRepo;
     
     private DefaultListModel<User> usersListModel = new DefaultListModel<>();
     private DefaultListModel<Product> productsListModel = new DefaultListModel<>();
     
+    private ProductTableModel productTableModel = new ProductTableModel();
+    
     /**
      * Creates new form MainForm
      */
     public MainForm() {
         initComponents();
+        
         userRepo = UsersRepository.getInstance();
         productRepo = ProductsRepository.getInstance();
+        
+        updateProductsTable();
+        
+        userRepo.getUsers().stream().forEach(u -> usersListModel.addElement(u));
     }
 
     /**
@@ -69,7 +75,7 @@ public class MainForm extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jTabbedPane1 = new javax.swing.JTabbedPane();
+        mainTabbedPane = new javax.swing.JTabbedPane();
         usersPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         usersList = new javax.swing.JList();
@@ -91,8 +97,6 @@ public class MainForm extends javax.swing.JFrame {
         ShoppingPanel = new javax.swing.JPanel();
         shoppingPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        SearchProductTextField = new javax.swing.JTextField();
-        SearchProductButton = new javax.swing.JButton();
         productsTableScrollPane = new javax.swing.JScrollPane();
         productsTable = new javax.swing.JTable();
         cartPanel = new javax.swing.JPanel();
@@ -100,7 +104,10 @@ public class MainForm extends javax.swing.JFrame {
         checkoutButton = new javax.swing.JButton();
         clearButton = new javax.swing.JButton();
         shoppingItemsScrollPanel = new javax.swing.JScrollPane();
-        shoppingItemsPanel = new javax.swing.JPanel();
+        shoppingItemsPanel = new ShoppingCart(new Client());
+        ;
+        jLabel12 = new javax.swing.JLabel();
+        totalCartValueLabel = new javax.swing.JLabel();
         ProductsPanel = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         productsList = new javax.swing.JList();
@@ -117,22 +124,31 @@ public class MainForm extends javax.swing.JFrame {
         productPriceField = new javax.swing.JTextField();
         productImageContainerPanel = new javax.swing.JPanel();
         uploadProductPicButton = new javax.swing.JButton();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        logoutMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        mainTabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                mainTabbedPaneStateChanged(evt);
+            }
+        });
 
         usersList.setModel(usersListModel);
         usersList.addListSelectionListener((e) -> {
             Object selectedItem = (User) usersList.getSelectedValue();
 
             if (selectedItem instanceof User) {
-                user = (User) selectedItem;
-                this.firstNameField.setText(user.getFirstName());
-                this.middleNameField.setText(user.getMiddleName());
-                this.lastNameField.setText(user.getLastName());
-                this.usernameField.setText(user.getUsername());
-                this.passwordField.setText(user.getPasswordHash());
-                this.passwordConfirmField.setText(user.getPasswordHash());
-                this.isManagerCheckbox.setSelected(user.isManager());
+                selectedUser = (User) selectedItem;
+                this.firstNameField.setText(selectedUser.getFirstName());
+                this.middleNameField.setText(selectedUser.getMiddleName());
+                this.lastNameField.setText(selectedUser.getLastName());
+                this.usernameField.setText(selectedUser.getUsername());
+                this.passwordField.setText(selectedUser.getPasswordHash());
+                this.passwordConfirmField.setText(selectedUser.getPasswordHash());
+                this.isManagerCheckbox.setSelected(selectedUser.isManager());
             }
         });
         jScrollPane1.setViewportView(usersList);
@@ -153,11 +169,6 @@ public class MainForm extends javax.swing.JFrame {
         jLabel7.setText("Password Confirm");
 
         isManagerCheckbox.setText("Is Manager");
-        isManagerCheckbox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                isManagerCheckboxActionPerformed(evt);
-            }
-        });
 
         cleanButton.setText("Clean");
         cleanButton.addActionListener(new java.awt.event.ActionListener() {
@@ -257,45 +268,17 @@ public class MainForm extends javax.swing.JFrame {
                             .addComponent(cleanButton)
                             .addComponent(deleteButton)
                             .addComponent(saveButton))
-                        .addGap(0, 70, Short.MAX_VALUE))
+                        .addGap(0, 73, Short.MAX_VALUE))
                     .addComponent(jScrollPane1))
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Users", usersPanel);
+        mainTabbedPane.addTab("Users", usersPanel);
 
-        jLabel1.setText("Product Search");
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        jLabel1.setText("Products List");
 
-        SearchProductButton.setText("Search");
-        SearchProductButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                SearchProductButtonActionPerformed(evt);
-            }
-        });
-
-        productsTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {"1", null, "Test",  new Integer(5)}
-            },
-            new String [] {
-                "ID", "Image", "Name", "Current Stock"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Object.class, java.lang.String.class, java.lang.Integer.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
+        productsTable.setModel(productTableModel);
         productsTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 productsTableMousePressed(evt);
@@ -313,23 +296,17 @@ public class MainForm extends javax.swing.JFrame {
             .addGroup(shoppingPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(shoppingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(productsTableScrollPane)
+                    .addComponent(productsTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
                     .addGroup(shoppingPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(SearchProductTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(SearchProductButton)))
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         shoppingPanelLayout.setVerticalGroup(
             shoppingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(shoppingPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(shoppingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(SearchProductTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(SearchProductButton))
+                .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(productsTableScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -339,8 +316,18 @@ public class MainForm extends javax.swing.JFrame {
         jLabel2.setText("Shopping Cart");
 
         checkoutButton.setText("Checkout");
+        checkoutButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkoutButtonActionPerformed(evt);
+            }
+        });
 
         clearButton.setText("Clear");
+        clearButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearButtonActionPerformed(evt);
+            }
+        });
 
         shoppingItemsScrollPanel.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
 
@@ -357,6 +344,10 @@ public class MainForm extends javax.swing.JFrame {
 
         shoppingItemsScrollPanel.setViewportView(shoppingItemsPanel);
 
+        jLabel12.setText("Total:");
+
+        totalCartValueLabel.setText("$0.0");
+
         javax.swing.GroupLayout cartPanelLayout = new javax.swing.GroupLayout(cartPanel);
         cartPanel.setLayout(cartPanelLayout);
         cartPanelLayout.setHorizontalGroup(
@@ -371,7 +362,11 @@ public class MainForm extends javax.swing.JFrame {
                         .addComponent(clearButton))
                     .addGroup(cartPanelLayout.createSequentialGroup()
                         .addComponent(jLabel2)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(cartPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel12)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(totalCartValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         cartPanelLayout.setVerticalGroup(
@@ -380,8 +375,12 @@ public class MainForm extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(shoppingItemsScrollPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 344, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(shoppingItemsScrollPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 307, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(cartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel12)
+                    .addComponent(totalCartValueLabel))
+                .addGap(15, 15, 15)
                 .addGroup(cartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(checkoutButton)
                     .addComponent(clearButton))
@@ -403,18 +402,18 @@ public class MainForm extends javax.swing.JFrame {
             .addComponent(cartPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("Shopping", ShoppingPanel);
+        mainTabbedPane.addTab("Shopping", ShoppingPanel);
 
         productsList.setModel(productsListModel);
         productsList.addListSelectionListener((e) -> {
             Object selectedItem = (Product) productsList.getSelectedValue();
 
             if (selectedItem instanceof Product) {
-                product = (Product) selectedItem;
-                this.productNameField.setText(product.getName());
-                this.productDescriptionField.setText(product.getDescription());
-                this.productPriceField.setText(product.getPrice() + "");
-                final BufferedImage productImage = product.getImage();
+                selectedProduct = (Product) selectedItem;
+                this.productNameField.setText(selectedProduct.getName());
+                this.productDescriptionField.setText(selectedProduct.getDescription());
+                this.productPriceField.setText(selectedProduct.getPrice() + "");
+                final BufferedImage productImage = selectedProduct.getImage();
 
                 if (productImage != null) {
                     this.productImageContainerPanel.removeAll();
@@ -532,57 +531,78 @@ public class MainForm extends javax.swing.JFrame {
                             .addComponent(deleteProductButton)
                             .addComponent(saveProductButton))
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Products", ProductsPanel);
+        mainTabbedPane.addTab("Products", ProductsPanel);
+
+        jMenu1.setText("User");
+
+        logoutMenuItem.setText("Logout");
+        logoutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logoutMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(logoutMenuItem);
+
+        jMenuBar1.add(jMenu1);
+
+        setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1)
+            .addComponent(mainTabbedPane)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1)
+            .addComponent(mainTabbedPane)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    
-    private void SearchProductButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SearchProductButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_SearchProductButtonActionPerformed
-    
-    private void productsTableMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_productsTableMousePressed
+        
+    private void productsTableMousePressed(MouseEvent evt) {//GEN-FIRST:event_productsTableMousePressed
         final JTable table = (JTable)evt.getSource();
         
         final Point point = evt.getPoint();
         
         final int row = table.rowAtPoint(point);
-        final TableModel tableData = (TableModel) table.getModel();
+        final ProductTableModel tableData = (ProductTableModel) table.getModel();
         
         final String itemID = tableData.getValueAt(0, row).toString();
         
         if (evt.getClickCount() == 2 && table.getSelectedRow() != -1) {
-            final JPanel panel = new CartItemPanel();
-            shoppingItemsPanel.setLayout(new BoxLayout(shoppingItemsPanel, BoxLayout.Y_AXIS));
-            shoppingItemsPanel.add(panel);
-            shoppingItemsPanel.revalidate();
-            shoppingItemsPanel.repaint();
-            
-            JOptionPane.showMessageDialog(null, "Seleced Item ID: " + itemID);
+            try {
+                final Product product = tableData.getProductAt(row);
+                final ShoppingCart cart = (ShoppingCart) shoppingItemsPanel;
+                
+                cart.addItem(product);
+                
+                refreshTotalValueLabel();
+            } catch (IndexOutOfBoundsException exception) {
+                final String message = "Failed to add product";
+                java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, message, exception);
+                JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }//GEN-LAST:event_productsTableMousePressed
 
-    private void isManagerCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isManagerCheckboxActionPerformed
-        // TODO add your handling code here:
-        
-    }//GEN-LAST:event_isManagerCheckboxActionPerformed
-
-    private void cleanButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cleanButtonActionPerformed
+    private void refreshTotalValueLabel() {
+        Double value = 0.0;
+        try {
+            final ShoppingCart cart = (ShoppingCart) shoppingItemsPanel;
+            
+            value = cart.getTotalCartValue();
+        } finally {
+            totalCartValueLabel.setText("$" + value);   
+        }
+    }
+    
+    private void cleanButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_cleanButtonActionPerformed
         usernameField.setText("");
         passwordConfirmField.setText("");
         passwordField.setText("");
@@ -590,10 +610,20 @@ public class MainForm extends javax.swing.JFrame {
         middleNameField.setText("");
         lastNameField.setText("");
         isManagerCheckbox.setSelected(false);
+        
+        selectedUser = null;
     }//GEN-LAST:event_cleanButtonActionPerformed
 
-    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        if (user != null) {
+    private void updateProductsTable() {
+        if (productsTable.getModel() instanceof ProductTableModel) {
+            final ProductTableModel model = (ProductTableModel) productsTable.getModel();
+            
+            model.fireTableDataChanged();
+        }
+    }
+    
+    private void saveButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        if (selectedUser != null) {
             JOptionPane.showMessageDialog(this, "Update user feature is not available, please clean the form to create new", "Warn", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -607,22 +637,22 @@ public class MainForm extends javax.swing.JFrame {
         }
         
         if (isManagerCheckbox.isSelected())
-            user = new Manager();
+            selectedUser = new Manager();
         else
-            user = new Client();
+            selectedUser = new Client();
         
-        user.setFirstName(firstNameField.getText());
-        user.setMiddleName(middleNameField.getText());
-        user.setLastName(lastNameField.getText());
-        user.setUsername(usernameField.getText());
+        selectedUser.setFirstName(firstNameField.getText());
+        selectedUser.setMiddleName(middleNameField.getText());
+        selectedUser.setLastName(lastNameField.getText());
+        selectedUser.setUsername(usernameField.getText());
         
         final String passwordText = String.copyValueOf(passwordField.getPassword());
         
-        user.setPassword(passwordText);
+        selectedUser.setPassword(passwordText);
         
         try {
-            userRepo.addUser(user);    
-            usersListModel.addElement(user);
+            userRepo.addUser(selectedUser);    
+            usersListModel.addElement(selectedUser);
             usersList.setModel(usersListModel);
             
             JOptionPane.showMessageDialog(this, "User Created", "Info", JOptionPane.INFORMATION_MESSAGE);
@@ -633,53 +663,53 @@ public class MainForm extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
             java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, message, exception);
         } finally {
-            user = null;
+            selectedUser = null;
         }
     }//GEN-LAST:event_saveButtonActionPerformed
 
     
-    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
+    private void deleteButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
 
-        if (user == null) {
+        if (selectedUser == null) {
             JOptionPane.showMessageDialog(this, "User must be selected from list to remove", "Warn", JOptionPane.WARNING_MESSAGE);    
             return;
         }
         
-        userRepo.removeUser(user);
-        usersListModel.removeElement(user);
+        userRepo.removeUser(selectedUser);
+        usersListModel.removeElement(selectedUser);
         usersList.setModel(usersListModel);
 
         JOptionPane.showMessageDialog(this, "User Removed", "Info", JOptionPane.INFORMATION_MESSAGE);
         
-        user = null;
+        selectedUser = null;
         cleanButtonActionPerformed(evt);
     }//GEN-LAST:event_deleteButtonActionPerformed
 
-    private void saveProductButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveProductButtonActionPerformed
-        if (product != null) {
+    private void saveProductButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveProductButtonActionPerformed
+        if (selectedProduct != null) {
             JOptionPane.showMessageDialog(this, "Update product feature is not available, please clean the form to create new", "Warn", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
         try {
-            product = new Product();
+            selectedProduct = new Product();
         
-            product.setName(productNameField.getText());
-            product.setDescription(productDescriptionField.getText());
-            product.setPrice(Double.parseDouble(productPriceField.getText()));
+            selectedProduct.setName(productNameField.getText());
+            selectedProduct.setDescription(productDescriptionField.getText());
+            selectedProduct.setPrice(Double.parseDouble(productPriceField.getText()));
 
             final Component imageComponent = productImageContainerPanel.getComponent(0);
 
             if (imageComponent instanceof ImagePanel) {
                 final ImagePanel imageConainter = (ImagePanel) imageComponent;
-                product.setImage(imageConainter.getBufferedImage());
+                selectedProduct.setImage(imageConainter.getBufferedImage());
             }
             
-            productRepo.addProduct(product);
+            productRepo.addProduct(selectedProduct);
             
             JOptionPane.showMessageDialog(this, "Product Created", "Info", JOptionPane.INFORMATION_MESSAGE);
             
-            productsListModel.addElement(product);
+            productsListModel.addElement(selectedProduct);
             productsList.setModel(productsListModel);
             
             cleanProductButtonActionPerformed(evt);
@@ -688,11 +718,11 @@ public class MainForm extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
             java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, message, exception);
         } finally {
-            product = null;
+            selectedProduct = null;
         }
     }//GEN-LAST:event_saveProductButtonActionPerformed
 
-    private void cleanProductButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cleanProductButtonActionPerformed
+    private void cleanProductButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_cleanProductButtonActionPerformed
         productNameField.setText("");
         productDescriptionField.setText("");
         
@@ -701,25 +731,27 @@ public class MainForm extends javax.swing.JFrame {
         productImageContainerPanel.removeAll();
         productImageContainerPanel.revalidate();
         productImageContainerPanel.repaint();
+        
+        selectedProduct = null;
     }//GEN-LAST:event_cleanProductButtonActionPerformed
 
-    private void deleteProductButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteProductButtonActionPerformed
-        if (product == null) {
+    private void deleteProductButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteProductButtonActionPerformed
+        if (selectedProduct == null) {
             JOptionPane.showMessageDialog(this, "Product must be selected from list to remove", "Warn", JOptionPane.WARNING_MESSAGE);    
             return;
         }
         
-        productRepo.removeProduct(product);
-        productsListModel.removeElement(product);
+        productRepo.removeProduct(selectedProduct);
+        productsListModel.removeElement(selectedProduct);
         productsList.setModel(productsListModel);
 
         JOptionPane.showMessageDialog(this, "Product Removed", "Info", JOptionPane.INFORMATION_MESSAGE);
         
-        product = null;
+        selectedProduct = null;
         cleanProductButtonActionPerformed(evt);
     }//GEN-LAST:event_deleteProductButtonActionPerformed
 
-    private void uploadProductPicButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadProductPicButtonActionPerformed
+    private void uploadProductPicButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_uploadProductPicButtonActionPerformed
         try {
             JFileChooser fileChooser = new JFileChooser();
             
@@ -746,6 +778,32 @@ public class MainForm extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, "Failed to load product image", exception);
         }
     }//GEN-LAST:event_uploadProductPicButtonActionPerformed
+
+    private void mainTabbedPaneStateChanged(ChangeEvent evt) {//GEN-FIRST:event_mainTabbedPaneStateChanged
+        java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, "Tab Changed");
+
+        updateProductsTable();
+    }//GEN-LAST:event_mainTabbedPaneStateChanged
+
+    private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
+        shoppingItemsPanel.removeAll();
+        refreshTotalValueLabel();
+    }//GEN-LAST:event_clearButtonActionPerformed
+
+    private void logoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutMenuItemActionPerformed
+        javax.swing.JFrame loginFrame = new LoginFrame();
+        
+        loginFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        loginFrame.setVisible(true);
+        
+        this.setVisible(false);
+    }//GEN-LAST:event_logoutMenuItemActionPerformed
+
+    private void checkoutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkoutButtonActionPerformed
+        JOptionPane.showMessageDialog(this, "Thanks for ordering, your order will be processed", "Checkout", JOptionPane.INFORMATION_MESSAGE);
+        
+        clearButtonActionPerformed(evt);
+    }//GEN-LAST:event_checkoutButtonActionPerformed
     
     /**
      * @param args the command line arguments
@@ -784,8 +842,6 @@ public class MainForm extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ProductsPanel;
-    private javax.swing.JButton SearchProductButton;
-    private javax.swing.JTextField SearchProductTextField;
     private javax.swing.JPanel ShoppingPanel;
     private javax.swing.JPanel cartPanel;
     private javax.swing.JButton checkoutButton;
@@ -799,6 +855,7 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -807,11 +864,14 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextField lastNameField;
+    private javax.swing.JMenuItem logoutMenuItem;
+    public javax.swing.JTabbedPane mainTabbedPane;
     private javax.swing.JTextField middleNameField;
     private javax.swing.JPasswordField passwordConfirmField;
     private javax.swing.JPasswordField passwordField;
@@ -827,6 +887,7 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JPanel shoppingItemsPanel;
     private javax.swing.JScrollPane shoppingItemsScrollPanel;
     private javax.swing.JPanel shoppingPanel;
+    private javax.swing.JLabel totalCartValueLabel;
     private javax.swing.JButton uploadProductPicButton;
     private javax.swing.JTextField usernameField;
     private javax.swing.JList usersList;

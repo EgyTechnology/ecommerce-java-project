@@ -124,10 +124,29 @@ public class LoginFrame extends javax.swing.JFrame {
             return;
         }
         
-        javax.swing.JFrame mainFrame = new MainForm();
+        MainForm mainFrame = new MainForm();
+        
         mainFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+       
+        if (user.get().isManager()) {
+            // Disable Shopping Tab
+            mainFrame.mainTabbedPane.setEnabledAt(1, false);
+            
+            // Set user to Users Tab
+            mainFrame.mainTabbedPane.setSelectedIndex(0);
+        } else {
+            // Set user to Shopping Tab
+            mainFrame.mainTabbedPane.setSelectedIndex(1);
+            
+            // Disable Users Tab
+            mainFrame.mainTabbedPane.setEnabledAt(0, false);
+            
+            // Disable Products Tab
+            mainFrame.mainTabbedPane.setEnabledAt(2, false);
+        }
         
         mainFrame.setVisible(true);
+        
         this.setVisible(false);
     }//GEN-LAST:event_loginButtonActionPerformed
 
