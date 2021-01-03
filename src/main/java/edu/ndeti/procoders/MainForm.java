@@ -106,8 +106,6 @@ public class MainForm extends javax.swing.JFrame {
         shoppingItemsScrollPanel = new javax.swing.JScrollPane();
         shoppingItemsPanel = new ShoppingCart(new Client());
         ;
-        jLabel12 = new javax.swing.JLabel();
-        totalCartValueLabel = new javax.swing.JLabel();
         ProductsPanel = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         productsList = new javax.swing.JList();
@@ -344,10 +342,6 @@ public class MainForm extends javax.swing.JFrame {
 
         shoppingItemsScrollPanel.setViewportView(shoppingItemsPanel);
 
-        jLabel12.setText("Total:");
-
-        totalCartValueLabel.setText("$0.0");
-
         javax.swing.GroupLayout cartPanelLayout = new javax.swing.GroupLayout(cartPanel);
         cartPanel.setLayout(cartPanelLayout);
         cartPanelLayout.setHorizontalGroup(
@@ -362,11 +356,7 @@ public class MainForm extends javax.swing.JFrame {
                         .addComponent(clearButton))
                     .addGroup(cartPanelLayout.createSequentialGroup()
                         .addComponent(jLabel2)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(cartPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel12)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(totalCartValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         cartPanelLayout.setVerticalGroup(
@@ -375,12 +365,8 @@ public class MainForm extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(shoppingItemsScrollPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 307, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(cartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel12)
-                    .addComponent(totalCartValueLabel))
-                .addGap(15, 15, 15)
+                .addComponent(shoppingItemsScrollPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 344, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(cartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(checkoutButton)
                     .addComponent(clearButton))
@@ -580,9 +566,7 @@ public class MainForm extends javax.swing.JFrame {
                 final Product product = tableData.getProductAt(row);
                 final ShoppingCart cart = (ShoppingCart) shoppingItemsPanel;
                 
-                cart.addItem(product);
-                
-                refreshTotalValueLabel();
+                cart.addItem(product);                
             } catch (IndexOutOfBoundsException exception) {
                 final String message = "Failed to add product";
                 java.util.logging.Logger.getLogger(MainForm.class.getName()).log(java.util.logging.Level.SEVERE, message, exception);
@@ -591,17 +575,6 @@ public class MainForm extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_productsTableMousePressed
 
-    private void refreshTotalValueLabel() {
-        Double value = 0.0;
-        try {
-            final ShoppingCart cart = (ShoppingCart) shoppingItemsPanel;
-            
-            value = cart.getTotalCartValue();
-        } finally {
-            totalCartValueLabel.setText("$" + value);   
-        }
-    }
-    
     private void cleanButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_cleanButtonActionPerformed
         usernameField.setText("");
         passwordConfirmField.setText("");
@@ -787,7 +760,6 @@ public class MainForm extends javax.swing.JFrame {
 
     private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
         shoppingItemsPanel.removeAll();
-        refreshTotalValueLabel();
     }//GEN-LAST:event_clearButtonActionPerformed
 
     private void logoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutMenuItemActionPerformed
@@ -800,9 +772,24 @@ public class MainForm extends javax.swing.JFrame {
     }//GEN-LAST:event_logoutMenuItemActionPerformed
 
     private void checkoutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkoutButtonActionPerformed
-        JOptionPane.showMessageDialog(this, "Thanks for ordering, your order will be processed", "Checkout", JOptionPane.INFORMATION_MESSAGE);
+        final int result = JOptionPane
+                .showConfirmDialog(this, 
+                        "The order total is: " + 
+                                ((ShoppingCart) shoppingItemsPanel)
+                                        .getTotalCartValue().toString() 
+                                + "\n Do you want to continue?", 
+                        "Checkout", JOptionPane.YES_NO_OPTION);
         
-        clearButtonActionPerformed(evt);
+        if (result == JOptionPane.YES_OPTION) {
+            JOptionPane
+                    .showMessageDialog(this, 
+                            "Thanks for ordering, your order will be processed", 
+                            "Checkout", JOptionPane.INFORMATION_MESSAGE);
+
+            clearButtonActionPerformed(evt);
+        } else {
+            JOptionPane.showMessageDialog(this, "Your order was canceled");
+        }        
     }//GEN-LAST:event_checkoutButtonActionPerformed
     
     /**
@@ -855,7 +842,6 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -887,7 +873,6 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JPanel shoppingItemsPanel;
     private javax.swing.JScrollPane shoppingItemsScrollPanel;
     private javax.swing.JPanel shoppingPanel;
-    private javax.swing.JLabel totalCartValueLabel;
     private javax.swing.JButton uploadProductPicButton;
     private javax.swing.JTextField usernameField;
     private javax.swing.JList usersList;
